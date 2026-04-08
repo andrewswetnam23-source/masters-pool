@@ -247,14 +247,14 @@ footer { text-align: center; padding: 2rem 1rem; font-size: 0.72rem; color: #2e5
   <!-- PICKS FORM VIEW -->
   <div class="view" id="view-picks">
     <div class="success-box" id="success-box">
-      <h3>Picks submitted!</h3>
-      <p>Your selections have been sent to the pool organizer.<br>Check the leaderboard once the Masters begins Thursday.</p>
+      <h3>You aren't finished yet!</h3>
+      <p>Please text the below to the pool organizer.<br>Check the leaderboard once the Masters begins Thursday.</p>
       <div class="picks-summary" id="picks-summary"></div>
     </div>
 
     <div id="form-body">
       <div class="form-intro">
-        <strong>How it works:</strong> Pick one golfer from each tier. Your team score is the combined score to par of all six picks. Lowest score wins. Missed cuts score 0 (not penalized further). Picks lock at Thursday's first tee time.
+        <strong>How it works:</strong> Pick one golfer from each tier. Your best 4 scores out of 6 count toward your team total — the 2 worst are dropped. Lowest score wins. Picks lock at Thursday's first tee time.
       </div>
 
       <div class="name-field">
@@ -463,13 +463,16 @@ function renderStandings() {
   const teams = PARTICIPANTS.map(p => {
     const picks = Object.entries(p.picks).map(([tier, gname]) => {
       const g = findGolfer(gname);
-      return { tier, name: gname, score: g ? g.val : 0, display: g ? g.display : '--', madeCut: g ? g.madeCut : true, found: !!g };
+      return { tier, name: gname, score: g ? g.val : 0, display: g ? g.display : '--', madeCut: g ? g.madeCut : true, found: !!g, counting: false };
     });
-    const total = picks.reduce((s, g) => s + (g.madeCut ? g.score : 0), 0);
+    // Best 4 of 6 — sort by score ascending, mark top 4 as counting
+    const sorted = [...picks].sort((a, b) => a.score - b.score);
+    sorted.slice(0, 4).forEach(g => g.counting = true);
+    const total = picks.filter(g => g.counting).reduce((s, g) => s + g.score, 0);
     return { name: p.name, picks, total };
   }).sort((a, b) => a.total - b.total);
 
-  let html = '<table><thead><tr><th style="width:36px;">Pos</th><th>Team</th><th style="text-align:right;">Score</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th style="width:36px;">Pos</th><th>Team <span style="font-size:0.65rem;color:#4caf50;font-weight:400;">(best 4 of 6)</span></th><th style="text-align:right;">Score</th></tr></thead><tbody>';
   teams.forEach((t, i) => {
     const r = i + 1;
     const sc = t.total === 0 ? 'E' : (t.total > 0 ? '+' + t.total : t.total);
@@ -477,10 +480,12 @@ function renderStandings() {
     html += `<tr class="${r<=3?'top-3':''}"><td class="rank rank-${r<=3?r:''}">${r}</td><td class="player-name">${t.name}</td><td class="team-score ${scClass}">${sc}</td></tr>`;
     html += `<tr class="picks-row"><td></td><td colspan="2"><div class="picks-list">`;
     t.picks.forEach((g, idx) => {
-      const chip = g.found ? (g.madeCut ? 'made-cut' : 'missed-cut') : '';
+      const dropped = !g.counting;
+      const chip = dropped ? 'missed-cut' : (g.found ? 'made-cut' : '');
       const scStr = g.display === '--' ? '' : g.display;
       const scCls = g.score < 0 ? 'under' : g.score > 0 ? 'over' : '';
-      html += `<span class="pick-chip ${chip}"><span class="tier-label">T${idx+1}</span>${g.name}${scStr ? `<span class="sc ${scCls}">${scStr}</span>` : ''}</span>`;
+      const droppedStyle = dropped ? 'opacity:0.45;' : '';
+      html += `<span class="pick-chip ${chip}" style="${droppedStyle}"><span class="tier-label">T${idx+1}</span>${g.name}${scStr ? `<span class="sc ${scCls}">${scStr}</span>` : ''}</span>`;
     });
     html += '</div></td></tr>';
   });
