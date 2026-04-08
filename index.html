@@ -388,7 +388,7 @@ const PARTICIPANTS = [
   // { name: "Andrew", picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Jordan Spieth", "Tier 3": "Jason Day", "Tier 4": "Sam Burns", "Tier 5": "Max Homa", "Tier 6": "Bubba Watson" } },
 ];
 
-const ORGANIZER_EMAIL = "YOUR_EMAIL@gmail.com"; // ← PUT YOUR EMAIL HERE
+
 
 // ─────────────────────────────────────────────────────────────
 let golferScores = {};
@@ -564,22 +564,33 @@ function submitPicks() {
   const tb = parseInt(tbRaw);
   const tbDisplay = tb === 0 ? 'E' : (tb > 0 ? '+' + tb : String(tb));
 
-  const body = `2026 Masters Pool Picks\n\nName: ${nameVal}\n\n` +
+  const summary = `2026 Masters Pool Picks\n\nName: ${nameVal}\n\n` +
     Object.entries(selections).map(([t, g]) => `${t}: ${g}`).join('\n') +
-    `\n\nTiebreaker (winner's score to par): ${tbDisplay}` +
-    `\n\n---\nSubmitted: ${new Date().toLocaleString()}`;
-
-  const mailto = `mailto:${ORGANIZER_EMAIL}?subject=Masters Pool Picks - ${encodeURIComponent(nameVal)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
+    `\n\nTiebreaker (winner's score to par): ${tbDisplay}`;
 
   document.getElementById('success-box').style.display = 'block';
   document.getElementById('picks-summary').innerHTML =
     `<strong>${nameVal}'s picks:</strong><br>` +
     Object.entries(selections).map(([t, g]) => `${t}: ${g}`).join('<br>') +
-    `<br><strong>Tiebreaker:</strong> ${tbDisplay}`;
+    `<br><strong>Tiebreaker:</strong> ${tbDisplay}` +
+    `<br><br><div style="font-size:0.82rem;color:#f9d84a;margin-bottom:0.4rem;">Copy and send to your pool organizer:</div>` +
+    `<textarea id="copy-box" readonly style="width:100%;height:160px;background:#0d1f0f;color:#a5d6a7;border:1px solid #2e7d32;border-radius:6px;padding:0.6rem;font-size:0.78rem;font-family:monospace;resize:none;">${summary}</textarea>` +
+    `<button onclick="copyPicks()" style="margin-top:0.5rem;background:#2e7d32;color:#e8f5e9;border:none;padding:0.5rem 1.25rem;border-radius:6px;font-size:0.82rem;cursor:pointer;" id="copy-btn">Copy to clipboard</button>`;
 
   document.getElementById('form-body').style.opacity = '0.4';
   document.getElementById('submit-btn').disabled = true;
+}
+
+function copyPicks() {
+  const box = document.getElementById('copy-box');
+  box.select();
+  box.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(box.value).then(() => {
+    document.getElementById('copy-btn').textContent = 'Copied!';
+  }).catch(() => {
+    document.execCommand('copy');
+    document.getElementById('copy-btn').textContent = 'Copied!';
+  });
 }
 
 loadScores();
