@@ -257,7 +257,8 @@ function findGolfer(name) {
 async function loadScores() {
   try {
     document.getElementById('status-text').textContent = 'Fetching...';
-    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&tournamentId=401811941');
+    const espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&tournamentId=401811941';
+    const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(espnUrl));
     if (!r.ok) throw new Error();
     const data = await r.json();
     const events = data.events||[];
