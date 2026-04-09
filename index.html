@@ -297,18 +297,21 @@ async function loadScores() {
 }
 
 function renderTop5(competitors) {
+  console.log('renderTop5 called, competitors count:', competitors.length);
+  if (competitors.length > 0) {
+    const s = competitors[0];
+    console.log('First competitor:', JSON.stringify(s));
+  }
   const posColors = ['#f9d84a','#bbb','#cd7f32','#888','#888'];
-  const top5 = [...competitors]
-    .filter(c => c.score?.displayValue && c.score.displayValue !== '--')
-    .sort((a,b) => {
-      // Use ESPN's sortOrder if available (most reliable)
-      if (a.sortOrder != null && b.sortOrder != null) return a.sortOrder - b.sortOrder;
-      // Fall back to score value
-      const av = a.score.displayValue==='E'?0:(parseInt(a.score.displayValue)||0);
-      const bv = b.score.displayValue==='E'?0:(parseInt(b.score.displayValue)||0);
-      return av-bv;
-    })
-    .slice(0,5);
+  const withScores = competitors.filter(c => c.score?.displayValue && c.score.displayValue !== '--');
+  console.log('With scores count:', withScores.length);
+  const top5 = [...withScores].sort((a,b) => {
+    if (a.sortOrder!=null && b.sortOrder!=null) return a.sortOrder - b.sortOrder;
+    const av = a.score.displayValue==='E'?0:(parseInt(a.score.displayValue)||0);
+    const bv = b.score.displayValue==='E'?0:(parseInt(b.score.displayValue)||0);
+    return av-bv;
+  }).slice(0,5);
+  console.log('Top 5:', top5.map(c => c.athlete?.displayName + ' ' + c.score?.displayValue));
 
   if (!top5.length) {
     document.getElementById('top5-body').innerHTML = '<tr><td colspan="4"><div class="loading" style="color:#4a7c4e;">Scores updating — check back shortly</div></td></tr>';
@@ -322,7 +325,7 @@ function renderTop5(competitors) {
     const scoreNum = scoreRaw==='E'?0:(parseInt(scoreRaw)||0);
     const thruRaw = c.status?.thru ?? c.linescores?.length ?? null;
     const thru = thruRaw===18?'F':thruRaw!=null?String(thruRaw):'—';
-    const pos = c.status?.position?.displayName || (i+1);
+    const pos = c.status?.position?.displayName||(i+1);
     html += `<tr>
       <td><span style="font-size:0.88rem;font-weight:600;color:${posColors[i]};">${pos}</span></td>
       <td><span style="font-size:0.88rem;color:#e8f5e9;">${name}</span></td>
