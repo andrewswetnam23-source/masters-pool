@@ -97,31 +97,33 @@ footer { text-align: center; padding: 2rem 1rem; font-size: 0.72rem; color: #2e5
   <!-- LEADERBOARD VIEW -->
   <div class="view active" id="view-leaderboard">
 
-    <div class="round-info" id="round-info" style="display:none">
+    <div class="round-info" id="round-info" style="display:flex">
       <div><div class="label">Tournament</div><div class="value" id="t-name">The Masters</div></div>
-      <div><div class="label">Status</div><div class="value" id="t-status">—</div></div>
+      <div><div class="label">Status</div><div class="value" id="t-status">Round 1 In Progress</div></div>
       <div><div class="label">Field</div><div class="value" id="t-field">—</div></div>
-      <div style="display:flex;align-items:center;gap:0.5rem;">
-        <div class="dot" id="status-dot"></div>
-        <span style="font-size:0.78rem;color:#81c784;" id="status-text">Loading...</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.25rem;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <div class="dot" id="status-dot"></div>
+          <span style="font-size:0.78rem;color:#81c784;" id="status-text">Loading...</span>
+        </div>
+        <span style="font-size:0.72rem;color:#4a7c4e;" id="last-updated"></span>
       </div>
     </div>
 
-    <div class="card" id="top5-card" style="display:none">
+    <div class="card" id="top5-card">
       <div class="card-title">
         Masters Leaderboard — Top 5
         <span style="font-size:0.65rem;color:#4a7c4e;font-weight:400;text-transform:none;letter-spacing:0;">Live from Augusta</span>
       </div>
       <table>
         <thead><tr><th style="width:36px;">Pos</th><th>Player</th><th class="c">Thru</th><th class="r">Score</th></tr></thead>
-        <tbody id="top5-body"><tr><td colspan="4"><div class="loading">Loading...</div></td></tr></tbody>
+        <tbody id="top5-body"><tr><td colspan="4"><div class="loading">Fetching live scores...</div></td></tr></tbody>
       </table>
     </div>
 
     <div class="card">
       <div class="card-title">
         <span>Pool Standings <span style="font-size:0.65rem;color:#4caf50;font-weight:400;">(best 4 of 6)</span></span>
-        <span style="font-size:0.68rem;color:#4a7c4e;font-weight:400;text-transform:none;letter-spacing:0;" id="last-updated"></span>
       </div>
       <table>
         <thead><tr><th style="width:36px;">Pos</th><th>Team</th><th class="r">Score</th></tr></thead>
@@ -297,22 +299,30 @@ function renderTop5(competitors) {
   const top5 = [...competitors]
     .filter(c => c.score?.displayValue && c.score.displayValue !== '--')
     .sort((a,b) => {
+      // Use ESPN's sortOrder if available (most reliable)
+      if (a.sortOrder != null && b.sortOrder != null) return a.sortOrder - b.sortOrder;
+      // Fall back to score value
       const av = a.score.displayValue==='E'?0:(parseInt(a.score.displayValue)||0);
       const bv = b.score.displayValue==='E'?0:(parseInt(b.score.displayValue)||0);
       return av-bv;
     })
     .slice(0,5);
-  if (!top5.length) return;
-  document.getElementById('top5-card').style.display = 'block';
+
+  if (!top5.length) {
+    document.getElementById('top5-body').innerHTML = '<tr><td colspan="4"><div class="loading" style="color:#4a7c4e;">Scores updating — check back shortly</div></td></tr>';
+    return;
+  }
+
   let html = '';
   top5.forEach((c,i) => {
     const name = c.athlete?.displayName||'—';
     const scoreRaw = c.score?.displayValue||'E';
     const scoreNum = scoreRaw==='E'?0:(parseInt(scoreRaw)||0);
     const thruRaw = c.status?.thru ?? c.linescores?.length ?? null;
-    const thru = thruRaw===18?'F':thruRaw??'—';
+    const thru = thruRaw===18?'F':thruRaw!=null?String(thruRaw):'—';
+    const pos = c.status?.position?.displayName || (i+1);
     html += `<tr>
-      <td><span style="font-size:0.88rem;font-weight:600;color:${posColors[i]};">${i+1}</span></td>
+      <td><span style="font-size:0.88rem;font-weight:600;color:${posColors[i]};">${pos}</span></td>
       <td><span style="font-size:0.88rem;color:#e8f5e9;">${name}</span></td>
       <td class="c"><span style="font-size:0.82rem;color:#4a7c4e;">${thru}</span></td>
       <td class="r"><span style="font-size:0.95rem;font-weight:600;color:${scoreNum<0?'#ef5350':scoreNum>0?'#81c784':'#888'};">${scoreRaw}</span></td>
