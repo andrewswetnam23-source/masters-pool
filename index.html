@@ -257,27 +257,13 @@ function findGolfer(name) {
 async function loadScores() {
   try {
     document.getElementById('status-text').textContent = 'Fetching...';
-    const espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&tournamentId=401811941';
-
-    const proxies = [
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(espnUrl)}`,
-      `https://corsproxy.io/?${encodeURIComponent(espnUrl)}`,
-      `https://proxy.cors.sh/${espnUrl}`,
-    ];
-
-    let data = null;
-    for (const proxy of proxies) {
-      try {
-        const r = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-        if (r.ok) { data = await r.json(); break; }
-      } catch { continue; }
-    }
-    if (!data) throw new Error('All proxies failed');
-
+    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&tournamentId=401811941', { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
     const events = data.events||[];
     const masters = events.find(e=>e.name?.toLowerCase().includes('masters'))||events[0];
     const comp = masters?.competitions?.[0];
-    if (!comp) throw new Error();
+    if (!comp) throw new Error('No competition data');
     const competitors = comp.competitors||[];
 
     document.getElementById('round-info').style.display = 'flex';
