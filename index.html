@@ -233,22 +233,31 @@ footer { text-align: center; padding: 2rem 1rem; font-size: 0.72rem; color: #2e5
       <div style="display:flex;align-items:center;gap:0.5rem;">
         <div class="dot" id="status-dot"></div>
         <span style="font-size:0.78rem;color:#81c784;" id="status-text">Loading...</span>
-        <button class="refresh-btn" onclick="loadScores()" style="margin-left:0.25rem;">↻</button>
       </div>
     </div>
 
+    <div class="card" id="masters-top5-card" style="display:none;margin-bottom:1rem;">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Masters Leaderboard — Top 5</span>
+        <span style="font-size:0.65rem;color:#4a7c4e;font-weight:400;text-transform:none;letter-spacing:0;">Augusta National</span>
+      </div>
+      <div id="masters-top5"></div>
+    </div>
+
     <div class="card">
-      <div class="card-title">Pool Standings</div>
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Pool Standings <span style="font-size:0.65rem;color:#4caf50;font-weight:400;">(best 4 of 6)</span></span>
+        <span style="font-size:0.68rem;color:#4a7c4e;font-weight:400;" id="last-updated"></span>
+      </div>
       <div id="standings-container"><div class="loading">Loading live scores...</div></div>
-      <div class="last-updated" id="last-updated"></div>
     </div>
   </div>
 
   <!-- PICKS FORM VIEW -->
   <div class="view" id="view-picks">
     <div class="success-box" id="success-box">
-      <h3>You aren't finished yet!</h3>
-      <p>Please text the below to the pool organizer.<br>Check the leaderboard once the Masters begins Thursday.</p>
+      <h3>Picks submitted!</h3>
+      <p>Your selections have been sent to the pool organizer.<br>Check the leaderboard once the Masters begins Thursday.</p>
       <div class="picks-summary" id="picks-summary"></div>
     </div>
 
@@ -381,11 +390,24 @@ const FIELD = {
   }
 };
 
-// ── PARTICIPANTS — Andrew fills this in after collecting picks ──────────────
-// Format: { name: "Team Name", picks: { "Tier 1": "Golfer Name", "Tier 2": "...", ... } }
 const PARTICIPANTS = [
-  // Example (replace with real entries):
-  // { name: "Andrew", picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Jordan Spieth", "Tier 3": "Jason Day", "Tier 4": "Sam Burns", "Tier 5": "Max Homa", "Tier 6": "Bubba Watson" } },
+  { name: "Andrew Swetnam", tiebreaker: -13, picks: { "Tier 1": "Ludvig Aberg", "Tier 2": "Justin Rose", "Tier 3": "Adam Scott", "Tier 4": "Nicolai Hojgaard", "Tier 5": "Sungjae Im", "Tier 6": "Sam Stevens" } },
+  { name: "James Gibson", tiebreaker: -15, picks: { "Tier 1": "Tommy Fleetwood", "Tier 2": "Robert MacIntyre", "Tier 3": "Tyrrell Hatton", "Tier 4": "Sam Burns", "Tier 5": "Ben Griffin", "Tier 6": "Aaron Rai" } },
+  { name: "Michael O'Gara", tiebreaker: -16, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Patrick Reed", "Tier 3": "Akshay Bhatia", "Tier 4": "J.J. Spaun", "Tier 5": "Sungjae Im", "Tier 6": "Ryan Gerard" } },
+  { name: "Jeff Leggot", tiebreaker: -13, picks: { "Tier 1": "Cameron Young", "Tier 2": "Hideki Matsuyama", "Tier 3": "Jason Day", "Tier 4": "Corey Conners", "Tier 5": "Sungjae Im", "Tier 6": "Nick Taylor" } },
+  { name: "Parlor's Hand Crafted Picks", tiebreaker: -11, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Jordan Spieth", "Tier 3": "Justin Thomas", "Tier 4": "Sam Burns", "Tier 5": "Ben Griffin", "Tier 6": "Ryan Gerard" } },
+  { name: "Daniel Buck Miller", tiebreaker: -9, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Justin Rose", "Tier 3": "Akshay Bhatia", "Tier 4": "Corey Conners", "Tier 5": "Gary Woodland", "Tier 6": "Ryan Gerard" } },
+  { name: "Jimmy Buckley", tiebreaker: -12, picks: { "Tier 1": "Cameron Young", "Tier 2": "Patrick Reed", "Tier 3": "Sepp Straka", "Tier 4": "Corey Conners", "Tier 5": "Daniel Berger", "Tier 6": "Ryan Fox" } },
+  { name: "William Cohn", tiebreaker: -12, picks: { "Tier 1": "Bryson DeChambeau", "Tier 2": "Jordan Spieth", "Tier 3": "Sepp Straka", "Tier 4": "Cameron Smith", "Tier 5": "Gary Woodland", "Tier 6": "Ryan Gerard" } },
+  { name: "Griffin Diemer", tiebreaker: -12, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Hideki Matsuyama", "Tier 3": "Sepp Straka", "Tier 4": "Nicolai Hojgaard", "Tier 5": "Ben Griffin", "Tier 6": "Wyndham Clark" } },
+  { name: "Marc Gasol (Tall Baker)", tiebreaker: -11, picks: { "Tier 1": "Bryson DeChambeau", "Tier 2": "Brooks Koepka", "Tier 3": "Adam Scott", "Tier 4": "J.J. Spaun", "Tier 5": "Max Homa", "Tier 6": "Brian Harman" } },
+  { name: "Blake Palmer", tiebreaker: -12, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Hideki Matsuyama", "Tier 3": "Min Woo Lee", "Tier 4": "J.J. Spaun", "Tier 5": "Gary Woodland", "Tier 6": "Wyndham Clark" } },
+  { name: "Ryan \"Dan Miller Sr.\" Reese", tiebreaker: -13, picks: { "Tier 1": "Collin Morikawa", "Tier 2": "Hideki Matsuyama", "Tier 3": "Min Woo Lee", "Tier 4": "Kurt Kitayama", "Tier 5": "Sungjae Im", "Tier 6": "Vijay Singh" } },
+  { name: "Grant Janich", tiebreaker: -11, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Robert MacIntyre", "Tier 3": "Jake Knapp", "Tier 4": "Jacob Bridgeman", "Tier 5": "Alexander Noren", "Tier 6": "Ryan Gerard" } },
+  { name: "Bam (Small Baker)", tiebreaker: -7, picks: { "Tier 1": "Xander Schauffele", "Tier 2": "Justin Rose", "Tier 3": "Shane Lowry", "Tier 4": "Corey Conners", "Tier 5": "Harry Hall", "Tier 6": "Ryan Fox" } },
+  { name: "Matthew Rolex's", tiebreaker: -14, picks: { "Tier 1": "Cameron Young", "Tier 2": "Russell Henley", "Tier 3": "Sepp Straka", "Tier 4": "J.J. Spaun", "Tier 5": "Ben Griffin", "Tier 6": "Fred Couples" } },
+  { name: "Chris Sellers", tiebreaker: -18, picks: { "Tier 1": "Scottie Scheffler", "Tier 2": "Justin Rose", "Tier 3": "Adam Scott", "Tier 4": "Matthew McCarty", "Tier 5": "Keegan Bradley", "Tier 6": "Sergio Garcia" } },
+  { name: "Alec Bucshon", tiebreaker: -8, picks: { "Tier 1": "Ludvig Aberg", "Tier 2": "Hideki Matsuyama", "Tier 3": "Sepp Straka", "Tier 4": "Cameron Smith", "Tier 5": "Rasmus Hojgaard", "Tier 6": "Brian Harman" } },
 ];
 
 
@@ -405,9 +427,25 @@ function showView(view, btn) {
 async function loadScores() {
   try {
     document.getElementById('status-text').textContent = 'Fetching...';
-    const r = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga');
-    if (!r.ok) throw new Error();
-    const data = await r.json();
+    let competitors = [];
+    let eventName = 'The Masters';
+    let statusText = '';
+    let fieldCount = 0;
+
+    // Try Masters-specific scoreboard first, fall back to general leaderboard
+    const urls = [
+      'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga',
+      'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard'
+    ];
+
+    let data = null;
+    for (const url of urls) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) { data = await r.json(); break; }
+      } catch {}
+    }
+    if (!data) throw new Error();
 
     const events = data.events || [];
     const masters = events.find(e => e.name?.toLowerCase().includes('masters')) || events[0];
@@ -416,12 +454,10 @@ async function loadScores() {
     const comp = masters.competitions?.[0];
     if (!comp) throw new Error();
 
-    document.getElementById('round-info').style.display = 'flex';
-    document.getElementById('t-name').textContent = masters.shortName || masters.name || 'The Masters';
-    document.getElementById('t-status').textContent = comp.status?.type?.description || '—';
-
-    const competitors = comp.competitors || [];
-    document.getElementById('t-field').textContent = competitors.length + ' players';
+    eventName = masters.shortName || masters.name || 'The Masters';
+    statusText = comp.status?.type?.description || '—';
+    competitors = comp.competitors || [];
+    fieldCount = competitors.length;
 
     golferScores = {};
     competitors.forEach(c => {
@@ -429,13 +465,21 @@ async function loadScores() {
       const val = c.score?.displayValue || 'E';
       const num = val === 'E' || val === '--' ? 0 : (parseInt(val) || 0);
       const cut = !(c.status?.toLowerCase().includes('cut'));
-      golferScores[name] = { display: val, val: num, madeCut: cut, name: c.athlete?.displayName || '' };
+      const thruRaw = c.status?.thru ?? c.linescores?.length ?? null;
+      const thru = thruRaw === 18 ? 'F' : thruRaw ? 'Thru ' + thruRaw : 'Thru 0';
+      golferScores[name] = { display: val, val: num, madeCut: cut, name: c.athlete?.displayName || '', thru };
     });
 
+    document.getElementById('round-info').style.display = 'flex';
+    document.getElementById('t-name').textContent = eventName;
+    document.getElementById('t-status').textContent = statusText;
+    document.getElementById('t-field').textContent = fieldCount + ' players';
+
+    renderTop5(competitors);
     renderStandings();
     document.getElementById('status-text').textContent = 'Live';
     document.getElementById('status-dot').className = 'dot';
-    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   } catch {
     document.getElementById('status-text').textContent = 'Offline';
     document.getElementById('status-dot').className = 'dot offline';
@@ -453,6 +497,56 @@ function findGolfer(name) {
   return null;
 }
 
+function renderTop5(competitors) {
+  const top5 = [...competitors]
+    .filter(c => {
+      const val = c.score?.displayValue;
+      return val && val !== '--';
+    })
+    .sort((a, b) => {
+      const aVal = a.score?.displayValue === 'E' ? 0 : (parseInt(a.score?.displayValue) || 0);
+      const bVal = b.score?.displayValue === 'E' ? 0 : (parseInt(b.score?.displayValue) || 0);
+      return aVal - bVal;
+    })
+    .slice(0, 5);
+
+  if (!top5.length) return;
+  document.getElementById('masters-top5-card').style.display = 'block';
+
+  const posColors = ['#f9d84a', '#bbb', '#cd7f32', '#888', '#888'];
+  let html = '<table><thead><tr>';
+  html += '<th style="width:36px;">Pos</th><th>Player</th><th style="text-align:center;">Thru</th><th style="text-align:right;">Score</th>';
+  html += '</tr></thead><tbody>';
+
+  top5.forEach((c, i) => {
+    const name = c.athlete?.displayName || '—';
+    const scoreRaw = c.score?.displayValue || 'E';
+    const scoreNum = scoreRaw === 'E' ? 0 : (parseInt(scoreRaw) || 0);
+    const scoreColor = scoreNum < 0 ? '#ef5350' : scoreNum > 0 ? '#81c784' : '#aaa';
+    const thruRaw = c.status?.thru ?? c.linescores?.length ?? null;
+    const thru = thruRaw === 18 ? 'F' : thruRaw ? thruRaw : '—';
+    const pos = i + 1;
+
+    html += `<tr style="border-top:1px solid #1e3d21;">
+      <td style="padding:0.65rem 1rem;vertical-align:middle;">
+        <span style="font-size:0.88rem;font-weight:600;color:${posColors[i]};">${pos}</span>
+      </td>
+      <td style="padding:0.65rem 1rem;vertical-align:middle;">
+        <span style="font-size:0.88rem;color:#e8f5e9;">${name}</span>
+      </td>
+      <td style="padding:0.65rem 1rem;text-align:center;vertical-align:middle;">
+        <span style="font-size:0.82rem;color:#4a7c4e;">${thru}</span>
+      </td>
+      <td style="padding:0.65rem 1rem;text-align:right;vertical-align:middle;">
+        <span style="font-size:0.95rem;font-weight:600;color:${scoreColor};">${scoreRaw}</span>
+      </td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('masters-top5').innerHTML = html;
+}
+
 function renderStandings() {
   if (PARTICIPANTS.length === 0) {
     document.getElementById('standings-container').innerHTML =
@@ -463,13 +557,17 @@ function renderStandings() {
   const teams = PARTICIPANTS.map(p => {
     const picks = Object.entries(p.picks).map(([tier, gname]) => {
       const g = findGolfer(gname);
-      return { tier, name: gname, score: g ? g.val : 0, display: g ? g.display : '--', madeCut: g ? g.madeCut : true, found: !!g, counting: false };
+      return { tier, name: gname, score: g ? g.val : 0, display: g ? g.display : '--', madeCut: g ? g.madeCut : true, found: !!g, counting: false, thru: g ? g.thru : '' };
     });
-    // Best 4 of 6 — sort by score ascending, mark top 4 as counting
-    const sorted = [...picks].sort((a, b) => a.score - b.score);
-    sorted.slice(0, 4).forEach(g => g.counting = true);
+    // Made-cut players always count first, then fill remaining spots with best missed-cut scores
+    const madeCut = picks.filter(g => g.madeCut);
+    const missedCut = picks.filter(g => !g.madeCut).sort((a, b) => a.score - b.score);
+    const spotsLeft = Math.max(0, 4 - madeCut.length);
+    madeCut.forEach(g => g.counting = true);
+    missedCut.slice(0, spotsLeft).forEach(g => g.counting = true);
     const total = picks.filter(g => g.counting).reduce((s, g) => s + g.score, 0);
-    return { name: p.name, picks, total };
+    const tb = p.tiebreaker === 0 ? 'E' : (p.tiebreaker > 0 ? '+' + p.tiebreaker : p.tiebreaker);
+    return { name: p.name, tiebreaker: tb, picks, total };
   }).sort((a, b) => a.total - b.total);
 
   let html = '<table><thead><tr><th style="width:36px;">Pos</th><th>Team <span style="font-size:0.65rem;color:#4caf50;font-weight:400;">(best 4 of 6)</span></th><th style="text-align:right;">Score</th></tr></thead><tbody>';
@@ -477,17 +575,29 @@ function renderStandings() {
     const r = i + 1;
     const sc = t.total === 0 ? 'E' : (t.total > 0 ? '+' + t.total : t.total);
     const scClass = t.total < 0 ? 'score-under' : t.total > 0 ? 'score-over' : 'score-even';
-    html += `<tr class="${r<=3?'top-3':''}"><td class="rank rank-${r<=3?r:''}">${r}</td><td class="player-name">${t.name}</td><td class="team-score ${scClass}">${sc}</td></tr>`;
-    html += `<tr class="picks-row"><td></td><td colspan="2"><div class="picks-list">`;
+    html += `<tr class="${r<=3?'top-3':''}">
+      <td class="rank rank-${r<=3?r:''}" style="vertical-align:top;padding-top:1rem;">${r}</td>
+      <td style="padding:0.8rem 1rem;">
+        <div class="player-name">${t.name} <span style="font-size:0.75rem;color:#4caf50;font-weight:400;">(TB: ${t.tiebreaker})</span></div>
+        <div style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.3rem;">`;
     t.picks.forEach((g, idx) => {
       const dropped = !g.counting;
-      const chip = dropped ? 'missed-cut' : (g.found ? 'made-cut' : '');
-      const scStr = g.display === '--' ? '' : g.display;
-      const scCls = g.score < 0 ? 'under' : g.score > 0 ? 'over' : '';
-      const droppedStyle = dropped ? 'opacity:0.45;' : '';
-      html += `<span class="pick-chip ${chip}" style="${droppedStyle}"><span class="tier-label">T${idx+1}</span>${g.name}${scStr ? `<span class="sc ${scCls}">${scStr}</span>` : ''}</span>`;
+      const scStr = g.display === '--' ? 'E' : g.display;
+      const scoreColor = g.score < 0 ? '#ef5350' : g.score > 0 ? '#81c784' : '#888';
+      const nameColor = dropped ? '#444' : '#c8e6c9';
+      const rowStyle = dropped ? 'opacity:0.45;' : '';
+      const nameDecor = dropped ? 'text-decoration:line-through;' : '';
+      const thru = g.thru || '';
+      html += `<div style="display:flex;align-items:center;gap:0.5rem;${rowStyle}padding:0.1rem 0;">
+        <span style="font-size:0.62rem;color:#4caf50;text-transform:uppercase;letter-spacing:0.5px;min-width:20px;">T${idx+1}</span>
+        <span style="font-size:0.83rem;color:${nameColor};flex:1;${nameDecor}">${g.name}</span>
+        ${thru ? `<span style="font-size:0.68rem;color:#4a7c4e;white-space:nowrap;">${thru}</span>` : ''}
+        <span style="font-size:0.85rem;font-weight:600;color:${dropped?'#444':scoreColor};min-width:32px;text-align:right;">${scStr}</span>
+      </div>`;
     });
-    html += '</div></td></tr>';
+    html += `</div></td>
+      <td class="team-score ${scClass}" style="vertical-align:top;padding-top:1rem;">${sc}</td>
+    </tr>`;
   });
   html += '</tbody></table>';
   document.getElementById('standings-container').innerHTML = html;
