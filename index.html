@@ -84,7 +84,7 @@ footer { text-align: center; padding: 2rem 1rem; font-size: 0.72rem; color: #2e5
 <header>
   <div class="logo">
     <div class="flag-icon">⛳</div>
-    <div><h1>2026 Masters Pool</h1><p>Augusta National · April 9–13</p></div>
+    <div><h1>2026 Masters Pool</h1><p>Augusta National · April 10–13</p></div>
   </div>
   <nav>
     <button class="nav-btn active" id="btn-leaderboard">Leaderboard</button>
@@ -258,9 +258,22 @@ async function loadScores() {
   try {
     document.getElementById('status-text').textContent = 'Fetching...';
     const espnUrl = 'https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga&tournamentId=401811941';
-    const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(espnUrl));
-    if (!r.ok) throw new Error();
-    const data = await r.json();
+
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(espnUrl)}`,
+      `https://corsproxy.io/?${encodeURIComponent(espnUrl)}`,
+      `https://proxy.cors.sh/${espnUrl}`,
+    ];
+
+    let data = null;
+    for (const proxy of proxies) {
+      try {
+        const r = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
+        if (r.ok) { data = await r.json(); break; }
+      } catch { continue; }
+    }
+    if (!data) throw new Error('All proxies failed');
+
     const events = data.events||[];
     const masters = events.find(e=>e.name?.toLowerCase().includes('masters'))||events[0];
     const comp = masters?.competitions?.[0];
@@ -290,9 +303,10 @@ async function loadScores() {
     const timeStr = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-updated').textContent = 'Last updated: ' + timeStr;
     document.getElementById('top5-updated').textContent = 'Updated ' + timeStr;
-  } catch {
+  } catch(e) {
     document.getElementById('status-text').textContent = 'Offline';
     document.getElementById('status-dot').className = 'dot offline';
+    document.getElementById('last-updated').textContent = 'Score feed unavailable — retrying in 3 min';
     renderStandings();
   }
 }
